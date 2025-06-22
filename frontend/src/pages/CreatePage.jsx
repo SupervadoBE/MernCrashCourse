@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Box, Container, Heading, Input, VStack, useColorModeValue, Button } from '@chakra-ui/react'
+import { Box, Container, Heading, Input, VStack, useColorModeValue, Button, useToast } from '@chakra-ui/react'
+import { useProductStore } from '../store/product'
 
 const CreatePage = () => {
   const [newProduct, setNewProduct] = useState({
@@ -8,18 +9,31 @@ const CreatePage = () => {
     image: '',
   })
 
-  const handleAddProduct = () => {
+  const toast = useToast()
+
+  const {createProduct} = useProductStore()
+  const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price || !newProduct.image) {
       alert('Please fill in all fields')
       return
     }
-    const product = {
-      name: newProduct.name,
-      price: parseFloat(newProduct.price),
-      image: newProduct.image,
-    }
     // Here you would typically send the product to your backend API
-    console.log('Product added:', product)
+    const { success, message } = await createProduct(newProduct)
+    if(!success){
+      toast({
+        title: "Error",
+        description: message,
+        status: "error",
+        isClosable: true
+      })
+    } else {
+      toast({
+        title: "Success",
+        description: message,
+        status: "success",
+        isClosable: true
+      })
+    }
     // Reset the form
     setNewProduct({ name: '', price: '', image: '' })
   }
